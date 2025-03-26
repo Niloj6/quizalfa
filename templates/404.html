@@ -44,7 +44,8 @@
                 e.preventDefault();
                 const quizType = this.getAttribute('data-type');
                 const questionCount = document.getElementById('question-count').value;
-                window.location.href = `/quiz/${quizType}?count=${questionCount}`;
+                window.location.href = `quiz.html?type=${quizType}&count=${questionCount}`;
+
             });
         });
     </script>
