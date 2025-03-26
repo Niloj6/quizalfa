@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seleção de Quiz</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1>Escolha um Quiz</h1>
+        <div class="question-count-selector">
+            <label for="question-count">Número de perguntas:</label>
+            <select id="question-count">
+                <option value="5" selected>5</option>
+                <option value="10">10</option>
+                <option value="15">15</option>
+            </select>
+        </div>
+        
+        <div class="quiz-selection">
+            <a href="#" class="quiz-button" data-type="q">
+                <span class="icon">Q</span>
+                <span class="text">Quiz Código Q</span>
+            </a>
+            <a href="#" class="quiz-button" data-type="j">
+                <span class="icon">J</span>
+                <span class="text">Quiz Código J</span>
+            </a>
+            <a href="#" class="quiz-button" data-type="phonetic">
+                <span class="icon">αβ</span>
+                <span class="text">Quiz Alfabeto Fonético</span>
+            </a>
+            <a href="#" class="quiz-button" data-type="all">
+                <span class="icon">★</span>
+                <span class="text">Quiz Completo</span>
+            </a>
+        </div>
+    </div>
+    <script>
+        document.querySelectorAll('.quiz-button').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const quizType = this.getAttribute('data-type');
+                const questionCount = document.getElementById('question-count').value;
+                window.location.href = `/quiz/${quizType}?count=${questionCount}`;
+            });
+        });
+    </script>
+</body>
+</html>

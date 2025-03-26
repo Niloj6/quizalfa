@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz - {{ quiz_name }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1>Quiz - {{ quiz_name }}</h1>
+        <div id="quiz-container">
+            <div id="question-counter"></div>
+            <div id="progress-bar">
+                <div id="progress"></div>
+            </div>
+            <p id="question"></p>
+            <div id="options"></div>
+            <div id="feedback" class="feedback"></div>
+            <button id="next" onclick="nextQuestion()" style="display: none;">Próxima</button>
+        </div>
+        <div id="results" style="display: none;">
+            <h2>Resultado Final</h2>
+            <p id="final-score"></p>
+            <p id="percentage-score"></p>
+            <div id="detailed-results"></div>
+            <button onclick="window.location.href='/'">Voltar para Seleção de Quiz</button>
+            <button onclick="window.location.reload()">Recomeçar Quiz</button>
+        </div>
+    </div>
+    <script>
+        const questions = JSON.parse('{{ questions | tojson | safe }}');
+        let currentQuestion = 0;
+        let score = 0;
+        let userAnswers = [];
+
+        function updateQuestionCounter() {
+            const counter = document.getElementById('question-counter');
+            counter.textContent = `Pergunta ${currentQuestion + 1} de ${questions.length}`;
+        }
+
+        function updateProgressBar() {
+            const progress = document.getElementById('progress');
+            const percentage = ((currentQuestion + 1) / questions.length) * 100;
+            progress.style.width = `${percentage}%`;
+        }
+
+        function loadQuestion() {
+            updateQuestionCounter();
+            updateProgressBar();
+            const questionData = questions[currentQuestion];
+            document.getElementById("question").textContent = questionData.question;
+            let optionsDiv = document.getElementById("options");
+            optionsDiv.innerHTML = "";
+            document.getElementById("feedback").innerHTML = "";
+            
+            questionData.options.forEach((option, index) => {
+                let button = document.createElement("button");
+                button.textContent = option;
+                button.onclick = () => checkAnswer(option);
+                button.className = 'option-button';
+                optionsDiv.appendChild(button);
+            });
+        }
+
+        function checkAnswer(selected) {
+            const questionData = questions[currentQuestion];
+            const isCorrect = selected === questionData.answer;
+            const feedback = document.getElementById("feedback");
+            const buttons = document.querySelectorAll("#options button");
+            
+            buttons.forEach(button => {
+                button.disabled = true;
+                if (button.textContent === questionData.answer) {
+                    button.classList.add("correct");
+                } else if (button.textContent === selected && !isCorrect) {
+                    button.classList.add("wrong");
+                }
+            });
+
+            userAnswers.push({
+                question: questionData.question,
+                userAnswer: selected,
+                correctAnswer: questionData.answer,
+                isCorrect: isCorrect
+            });
+
+            feedback.innerHTML = isCorrect ? 
+                "<p class='correct-feedback'>Correto!</p>" : 
+                `<p class='wrong-feedback'>Incorreto. A resposta correta é: ${questionData.answer}</p>`;
+            
+            if (isCorrect) score++;
+            document.getElementById("next").style.display = "block";
+        }
+
+        function showResults() {
+            document.getElementById("quiz-container").style.display = "none";
+            document.getElementById("results").style.display = "block";
+            
+            const finalScore = document.getElementById("final-score");
+            finalScore.textContent = `Você acertou ${score} de ${questions.length} questões!`;
+            
+            const percentageScore = document.getElementById("percentage-score");
+            const percentage = (score / questions.length) * 100;
+            percentageScore.textContent = `Porcentagem de acerto: ${percentage.toFixed(2)}%`;
+            
+            const detailedResults = document.getElementById("detailed-results");
+            detailedResults.innerHTML = "";
+            
+            userAnswers.forEach((answer, index) => {
+                const resultDiv = document.createElement("div");
+                resultDiv.className = `result-item ${answer.isCorrect ? 'correct' : 'wrong'}`;
+                resultDiv.innerHTML = `
+                    <p><strong>Pergunta ${index + 1}:</strong> ${answer.question}</p>
+                    <p>Sua resposta: ${answer.userAnswer}</p>
+                    ${!answer.isCorrect ? `<p>Resposta correta: ${answer.correctAnswer}</p>` : ''}
+                `;
+                detailedResults.appendChild(resultDiv);
+            });
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            if (currentQuestion < questions.length) {
+                loadQuestion();
+                document.getElementById("next").style.display = "none";
+            } else {
+                showResults();
+            }
+        }
+
+        window.onload = loadQuestion;
+    </script>
+</body>
+</html>
